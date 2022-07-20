@@ -1,12 +1,33 @@
 package org.firstinspires.ftc.teamcode.Hardware;
 
+import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.hardwareMap;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 public class Mecanum {
+    DcMotor fl;
+    DcMotor fr;
+    DcMotor bl;
+    DcMotor br;
     /**
      * Initializes the robot's necessary subsystems and motors
      */
+
+    public Mecanum(){
+        initMecanum();
+    }
     public void initMecanum(){
+        fl = hardwareMap.get(DcMotor.class, "fl");
+        fr = hardwareMap.get(DcMotor.class, "fr");
+        bl = hardwareMap.get(DcMotor.class, "bl");
+        br = hardwareMap.get(DcMotor.class, "br");
+
+        fr.setDirection(DcMotorSimple.Direction.FORWARD);
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.FORWARD);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
@@ -15,11 +36,12 @@ public class Mecanum {
      * @param power
      */
     public void setAllPower(double power){
-        /*
 
-                Y O U R   C O D E   H E R E
+        fl.setPower(power);
+        fr.setPower(power);
+        bl.setPower(power);
+        br.setPower(power);
 
-         */
     }
 
     /**
@@ -27,6 +49,16 @@ public class Mecanum {
      * @param power
      */
     public void setDrivePower(double drive, double strafe, double turn, double power){
+
+        double frPower = (drive - strafe - turn) * power;
+        double flPower = (drive + strafe + turn) * power;
+        double brPower = (drive + strafe - turn) * power;
+        double blPower = (drive - strafe + turn) * power;
+
+        fr.setPower(frPower);
+        fl.setPower(flPower);
+        br.setPower(brPower);
+        bl.setPower(blPower);
         /*
 
                 Y O U R   C O D E   H E R E
@@ -40,6 +72,8 @@ public class Mecanum {
      * @param ticks
      */
     public void strafe(double ticks){
+
+
         /*
 
                 Y O U R   C O D E   H E R E
