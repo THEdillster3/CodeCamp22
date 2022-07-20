@@ -84,13 +84,6 @@ public class IterativeTeleOp extends OpMode {
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
      */
-    public void setDrivePower(){
-        if(!(controller.get(LEFT, X) == 0)){
-            rotation = controller.get(LEFT, X);
-        }else{
-            rotation = correction;
-        }
-    }
     @Override
     public void init_loop() {
 
@@ -122,10 +115,13 @@ public class IterativeTeleOp extends OpMode {
         Controller.update();
 
 
+        correction= pid.update(zuckerberg.gyro.getAngle() - setPoint, true);
+
 
         if(controller.get(CIRCLE, TAP)){
             setPoint += 90;
         }
+
 
         rotation = controller.get(RIGHT, X);
         if(!(controller.get(RIGHT, X) == 0)){
