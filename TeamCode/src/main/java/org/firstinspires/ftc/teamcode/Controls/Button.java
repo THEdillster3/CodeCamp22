@@ -30,9 +30,14 @@ public class Button {
         down = buttonCheck.check();
         up = !down;
         tap = (!pressed_last_cycle && down && time.seconds() > waitTime);
-        toggle = tap != toggle;
-
-        if (tap) { time.reset(); }
+        if (tap) {
+            pressed_last_cycle = true;
+            toggle = !toggle;
+            time.reset();
+        }
+        else {
+            pressed_last_cycle = false;
+        }
     }
 
 }
