@@ -1,4 +1,8 @@
-package org.firstinspires.ftc.utilities;
+package org.firstinspires.ftc.teamcode.Utilities;
+
+import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.DASH_DERIVATIVE_WEIGHT;
+import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.DASH_INTEGRAL_WEIGHT;
+import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.DASH_PROPORTIONAL_WEIGHT;
 
 public class PID {
 
@@ -33,9 +37,21 @@ public class PID {
         previousError = error; //sets previousError for next loop
         previousTime = System.currentTimeMillis(); //sets previousTime for next loop
 
-        double pComponent = error * proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
-        double iComponent = integralSum * integralWeight; //sets the iComponent by multipling the integral by the integralWeight
-        double dComponent = rateOfChange * derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
+        double pComponent = error;
+        double iComponent = integralSum;
+        double dComponent = rateOfChange;
+
+        if (isTuning){
+            pComponent *= DASH_PROPORTIONAL_WEIGHT;
+            iComponent *= DASH_INTEGRAL_WEIGHT;
+            dComponent *= DASH_DERIVATIVE_WEIGHT;
+        }
+        else {
+            pComponent *= proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
+            iComponent *= integralWeight; //sets the iComponent by multipling the integral by the integralWeight
+            dComponent *= derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
+        }
+
 
         //returns the correction
         return pComponent + iComponent + dComponent;

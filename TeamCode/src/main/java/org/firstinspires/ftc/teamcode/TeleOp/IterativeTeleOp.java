@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -16,19 +17,28 @@ import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState.UP;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.CIRCLE;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.CROSS;
+import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.DPAD_DN;
+import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.DPAD_UP;
+import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.RB1;
+import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.SQUARE;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.TRIANGLE;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Input.LEFT;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Input.RIGHT;
+import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_SHIFTED_X;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_SHIFTED_Y;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_Y;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.SHIFTED_X;
+import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.SHIFTED_Y;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.X;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.setOpMode;
 
 import org.firstinspires.ftc.teamcode.Controls.Controller;
+import org.firstinspires.ftc.teamcode.Hardware.Arm;
+import org.firstinspires.ftc.teamcode.Hardware.DuckSpinner;
 import org.firstinspires.ftc.teamcode.Hardware.Robot;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.IMU;
+import org.firstinspires.ftc.teamcode.Utilities.PID;
 
 //@Disabled
 @TeleOp(name="Iterative TeleOp", group="Iterative Opmode")
@@ -36,20 +46,18 @@ public class IterativeTeleOp extends OpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    DcMotor fl;
-    DcMotor fr;
-    DcMotor bl;
-    DcMotor br;
+
     Robot zuckerberg;
     boolean speed = false;
     boolean last = false;
     Controller controller;
-    private DcMotor demoMotor;
-    private org.firstinspires.ftc.utilities.PID pid;
+    private PID pid;
     private double setPoint = 0;
     double rotation;
     private double correction = 0;
     private boolean wasTurning;
+    private boolean direction = true;
+
 
 
 
@@ -60,21 +68,11 @@ public class IterativeTeleOp extends OpMode {
     public void init() {
         setOpMode(this);
 
-        /*
-                    Y O U R   C O D E   H E R E
-                                                    */
 
-        fl = hardwareMap.get(DcMotor.class, "fl");
-        fr = hardwareMap.get(DcMotor.class, "fr");
-        bl = hardwareMap.get(DcMotor.class, "bl");
-        br = hardwareMap.get(DcMotor.class, "br");
         zuckerberg = new Robot();
         controller = new Controller(gamepad1);
-        controller.add(CROSS, DOWN, () -> zuckerberg.drivetrain.setAllPower(1));
-        pid = new org.firstinspires.ftc.utilities.PID(0, 0, 0);
-        correction = pid.update(zuckerberg.gyro.getAngle() - setPoint, true);
 
-
+        pid = new PID(0, 0, 0);
 
 
         multTelemetry.addData("Status", "Initialized");
@@ -93,7 +91,6 @@ public class IterativeTeleOp extends OpMode {
 
 
         multTelemetry.addData("Status", "InitLoop");
-        multTelemetry.addData("Motor Position", fl.getCurrentPosition());
         multTelemetry.update();
     }
 
@@ -115,16 +112,16 @@ public class IterativeTeleOp extends OpMode {
         Controller.update();
 
 
-        correction= pid.update(zuckerberg.gyro.getAngle() - setPoint, true);
+        correction = pid.update(zuckerberg.gyro.getAngle() - setPoint, true);
 
 
-        if(controller.get(CIRCLE, TAP)){
+        if(controller.get(TRIANGLE, TAP)){
             setPoint += 90;
         }
 
 
-        rotation = controller.get(RIGHT, X);
         if(!(controller.get(RIGHT, X) == 0)){
+            rotation = controller.get(RIGHT, X);
             wasTurning = true;
         }else{
             if(wasTurning){
@@ -133,6 +130,22 @@ public class IterativeTeleOp extends OpMode {
             }
             rotation = correction;
         }
+        //This makes the duck spinner run with a power of 5
+        if (controller.get(RB1,TAP)){
+            direction = !direction;
+        }
+        if(controller.get(CIRCLE, DOWN) && direction){
+            zuckerberg.duck.spin(1);
+        }else if(controller.get(CIRCLE, DOWN) && !direction){
+            zuckerberg.duck.spin(-1);
+        }else{
+            zuckerberg.duck.spin(0);}
+
+        zuckerberg.grabber.update(controller.get(SQUARE, TAP), controller.get(TRIANGLE, TAP));
+
+
+
+
 
         //This sets the power of the motors
         double power;
@@ -146,8 +159,8 @@ public class IterativeTeleOp extends OpMode {
         controller.setJoystickShift(LEFT, zuckerberg.gyro.getAngle());
 
 
-        double drive = controller.get(LEFT, INVERT_SHIFTED_Y);
-        double strafe = controller.get(LEFT, SHIFTED_X);
+        double drive = controller.get(LEFT, SHIFTED_Y);
+        double strafe = controller.get(LEFT, INVERT_SHIFTED_X);
 
 
         zuckerberg.drivetrain.setDrivePower(drive,strafe,rotation,power);
@@ -166,8 +179,8 @@ public class IterativeTeleOp extends OpMode {
              ----------- L O G G I N G -----------
                                                 */
         multTelemetry.addData("Status", "TeleOp Running");
-        multTelemetry.update();
         multTelemetry.addData("Angle",zuckerberg.gyro.getAngle());
+        multTelemetry.update();
 
     }
 
