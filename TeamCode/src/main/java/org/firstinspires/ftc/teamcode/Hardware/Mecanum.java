@@ -1,10 +1,16 @@
 package org.firstinspires.ftc.teamcode.Hardware;
 
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.hardwareMap;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 
+import static java.lang.Math.abs;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Mecanum {
     DcMotor fl;
@@ -59,12 +65,30 @@ public class Mecanum {
         fl.setPower(flPower);
         br.setPower(brPower);
         bl.setPower(blPower);
-        /*
 
-                Y O U R   C O D E   H E R E
 
-         */
     }
+    public void resetMotors(){
+        fr.setMode(STOP_AND_RESET_ENCODER);
+        fl.setMode(STOP_AND_RESET_ENCODER);
+        br.setMode(STOP_AND_RESET_ENCODER);
+        bl.setMode(STOP_AND_RESET_ENCODER);
+
+        fr.setMode(RUN_WITHOUT_ENCODER);
+        fl.setMode(RUN_WITHOUT_ENCODER);
+        br.setMode(RUN_WITHOUT_ENCODER);
+        bl.setMode(RUN_WITHOUT_ENCODER);
+    }
+    public double getPosition(){
+        double frPosition = fr.getCurrentPosition();
+        double flPosition = fl.getCurrentPosition();
+        double brPosition = br.getCurrentPosition();
+        double blPosition = bl.getCurrentPosition();
+        double avgPosition =(frPosition + flPosition + brPosition + blPosition) / 4.0;
+        return avgPosition;
+    }
+
+
 
 
     /**
@@ -72,6 +96,23 @@ public class Mecanum {
      * @param ticks
      */
     public void strafe(double ticks){
+        resetMotors();
+        double current_distance = 0.0;
+        double power = 0.5;
+        if (ticks < 0){
+            power = -power;
+        }
+        while (abs(current_distance) < abs(ticks)){
+            current_distance = getPosition();
+
+            setAllPower(power);
+            multTelemetry.addData("current distance", current_distance);
+            multTelemetry.addData("Target Distance", ticks);
+            multTelemetry.update();
+
+
+        }
+        setAllPower(0.0);
 
 
         /*

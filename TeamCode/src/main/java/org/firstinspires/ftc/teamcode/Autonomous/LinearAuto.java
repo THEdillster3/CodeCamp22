@@ -12,18 +12,22 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.setOpMode;
 
-@Disabled
+import org.firstinspires.ftc.teamcode.Hardware.Robot;
+
 @Autonomous(name="LinearAuto", group="Autonomous Linear Opmode")
 public class LinearAuto extends LinearOpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
+    private Robot zuckerberg;
+
 
     public void initialize(){
         setOpMode(this);
 
         multTelemetry.addData("Status", "Initalized");
         multTelemetry.update();
+        zuckerberg = new Robot();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -33,15 +37,14 @@ public class LinearAuto extends LinearOpMode
 
         initialize();
 
+
         multTelemetry.addLine("Waiting for start");
         multTelemetry.update();
         waitForStart();
 
         if (opModeIsActive()){
+            zuckerberg.drivetrain.strafe(1000);
 
-            /*
-                    Y O U R   C O D E   H E R E
-                                                   */
 
         }
    }

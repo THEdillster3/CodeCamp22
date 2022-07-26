@@ -10,7 +10,8 @@ import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry
 /**
  * A class for containing an FTC Mecanum robot
  */
-public class Robot {
+public class
+Robot {
 
    public static ElapsedTime time = new ElapsedTime();
    public Mecanum drivetrain;
