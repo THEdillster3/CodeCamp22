@@ -7,7 +7,10 @@ import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.LB1;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.SQUARE;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.TRIANGLE;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Input.LEFT;
+import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Input.RIGHT;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_SHIFTED_X;
+import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_SHIFTED_Y;
+import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.SHIFTED_X;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.SHIFTED_Y;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.X;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
@@ -37,8 +40,6 @@ public class IterativeTeleOp extends OpMode {
     private double correction = 0;
     private boolean wasTurning;
     private boolean direction = true;
-
-
 
 
     /*
@@ -96,8 +97,8 @@ public class IterativeTeleOp extends OpMode {
 
         correction = pid.update(zuckerberg.gyro.getAngle() - setPoint, true);
         double rotation;
-        if(!(controller.get(LEFT, X) == 0)){
-            rotation = controller.get(LEFT, X);
+        if(!(controller.get(RIGHT, X) == 0)){
+            rotation = controller.get(RIGHT, X);
             wasTurning = true;
         }else{
             if(wasTurning){
@@ -105,10 +106,6 @@ public class IterativeTeleOp extends OpMode {
                 wasTurning = false;
             }
             rotation = correction;
-        }
-
-        if(controller.get(LB1,TAP)){
-            setPoint += 90;
         }
 
 
@@ -142,8 +139,8 @@ public class IterativeTeleOp extends OpMode {
         controller.setJoystickShift(LEFT, zuckerberg.gyro.getAngle());
 
 
-        double drive = controller.get(LEFT, SHIFTED_Y);
-        double strafe = controller.get(LEFT, INVERT_SHIFTED_X);
+        double drive = controller.get(LEFT, INVERT_SHIFTED_Y);
+        double strafe = controller.get(LEFT, SHIFTED_X);
 
 
         zuckerberg.drivetrain.setDrivePower(drive,strafe,rotation,power);

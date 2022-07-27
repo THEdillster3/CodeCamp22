@@ -43,9 +43,9 @@ public class LinearAuto extends LinearOpMode
         waitForStart();
 
         if (opModeIsActive()){
-            zuckerberg.drivetrain.strafe(1000);
-
-
+            zuckerberg.drivetrain.strafe(175);
+            zuckerberg.drivetrain.turn(-90, zuckerberg.gyro);
+            //zuckerberg.drivetrain.
         }
    }
 }

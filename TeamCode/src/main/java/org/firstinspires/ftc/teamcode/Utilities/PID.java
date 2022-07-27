@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Utilities;
 
+import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.derivativeWeight;
 import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.integralWeight;
 import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.proportionalWeight;
@@ -36,9 +37,26 @@ public class PID {
         previousError = error; //sets previousError for next loop
         previousTime = System.currentTimeMillis(); //sets previousTime for next loop
 
-        double pComponent = error * PIDWeights.proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
-        double iComponent = integralSum * PIDWeights.integralWeight; //sets the iComponent by multipling the integral by the integralWeight
-        double dComponent = rateOfChange * PIDWeights.derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
+        double pComponent = error;
+        double iComponent = integralSum;
+        double dComponent = rateOfChange;
+
+        if (isTuning){
+            pComponent *= PIDWeights.proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
+            iComponent *= integralSum * PIDWeights.integralWeight; //sets the iComponent by multipling the integral by the integralWeight
+            dComponent *= rateOfChange * PIDWeights.derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
+
+            multTelemetry.addData("P", pComponent);
+            multTelemetry.addData("I", iComponent);
+            multTelemetry.addData("D", dComponent);
+            multTelemetry.addData("PID", pComponent + iComponent + dComponent);
+        }
+        else {
+            pComponent *= this.proportionalWeight;
+            iComponent *= this.integralWeight;
+            dComponent *= this.derivativeWeight;
+        }
+
 
         //returns the correction
         return pComponent + iComponent + dComponent;

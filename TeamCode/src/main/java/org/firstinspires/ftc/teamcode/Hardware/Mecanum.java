@@ -9,14 +9,19 @@ import static java.lang.Math.abs;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Hardware.Sensors.IMU;
+import org.firstinspires.ftc.teamcode.Utilities.MathUtils;
+import org.firstinspires.ftc.teamcode.Utilities.PID;
 
 public class Mecanum {
     DcMotor fl;
     DcMotor fr;
     DcMotor bl;
     DcMotor br;
+    private PID rotationalPID;
     /**
      * Initializes the robot's necessary subsystems and motors
      */
@@ -31,9 +36,12 @@ public class Mecanum {
         br = hardwareMap.get(DcMotor.class, "br");
 
         fr.setDirection(DcMotorSimple.Direction.FORWARD);
+
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         br.setDirection(DcMotorSimple.Direction.FORWARD);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        rotationalPID = new PID(.065,0,.00001);
 
     }
 
@@ -125,14 +133,20 @@ public class Mecanum {
     /**
      * Rotates the robot autonomously a certain number of degrees with a margin of error
      * @param degrees
-     * @param moe
+     * @param gyro
      */
-    public void turn(double degrees, double moe){
-        /*
-
-                Y O U R   C O D E   H E R E
-
-         */
+    public void turn(double degrees, IMU gyro){
+        ElapsedTime timer = new ElapsedTime();
+         double closestAngle = MathUtils.closestAngle(degrees, gyro.getAngle());
+         timer.reset();
+        while(timer.seconds() < 2){
+            double turnValue = rotationalPID.update(closestAngle - gyro.getAngle(), false);
+            setDrivePower(0.0,0.0, -turnValue, 0.5);
+            multTelemetry.addData("Closest Angle ", degrees);
+            multTelemetry.addData("Current Angle ", gyro.getAngle());
+            multTelemetry.update();
+        }
+        setAllPower(0.0);
     }
 
 
