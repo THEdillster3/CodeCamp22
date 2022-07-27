@@ -1,46 +1,26 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import com.wolfpackmachina.bettersensors.Sensors.Gyro;
-
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState.DOWN;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState.NOT_TOGGLED;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState.TAP;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState.TOGGLE;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.ButtonState.UP;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.CIRCLE;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.CROSS;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.DPAD_DN;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.DPAD_UP;
-import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.RB1;
+import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.LB1;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.SQUARE;
 import static org.firstinspires.ftc.teamcode.Controls.ButtonControls.Input.TRIANGLE;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Input.LEFT;
-import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Input.RIGHT;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_SHIFTED_X;
-import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_SHIFTED_Y;
-import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.INVERT_Y;
-import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.SHIFTED_X;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.SHIFTED_Y;
 import static org.firstinspires.ftc.teamcode.Controls.JoystickControls.Value.X;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.setOpMode;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.Controls.Controller;
-import org.firstinspires.ftc.teamcode.Hardware.Arm;
-import org.firstinspires.ftc.teamcode.Hardware.DuckSpinner;
 import org.firstinspires.ftc.teamcode.Hardware.Robot;
-import org.firstinspires.ftc.teamcode.Hardware.Sensors.IMU;
 import org.firstinspires.ftc.teamcode.Utilities.PID;
 
-//@Disabled
 @TeleOp(name="Iterative TeleOp", group="Iterative Opmode")
 public class IterativeTeleOp extends OpMode {
 
@@ -115,15 +95,9 @@ public class IterativeTeleOp extends OpMode {
 
 
         correction = pid.update(zuckerberg.gyro.getAngle() - setPoint, true);
-
-
-        if(controller.get(TRIANGLE, TAP)){
-            setPoint += 90;
-        }
-
-
-        if(!(controller.get(RIGHT, X) == 0)){
-            rotation = controller.get(RIGHT, X);
+        double rotation;
+        if(!(controller.get(LEFT, X) == 0)){
+            rotation = controller.get(LEFT, X);
             wasTurning = true;
         }else{
             if(wasTurning){
@@ -132,10 +106,17 @@ public class IterativeTeleOp extends OpMode {
             }
             rotation = correction;
         }
-        //This makes the duck spinner run with a power of 5
-        if (controller.get(RB1,TAP)){
-            direction = !direction;
+
+        if(controller.get(LB1,TAP)){
+            setPoint += 90;
         }
+
+
+        if(controller.get(TRIANGLE, TAP)){
+            setPoint += 90;
+        }
+
+
         if(controller.get(CIRCLE, DOWN) && direction){
             zuckerberg.duck.spin(1);
         }else if(controller.get(CIRCLE, DOWN) && !direction){

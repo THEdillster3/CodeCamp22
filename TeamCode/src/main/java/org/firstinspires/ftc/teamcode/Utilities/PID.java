@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.Utilities;
 
-import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.DASH_DERIVATIVE_WEIGHT;
-import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.DASH_INTEGRAL_WEIGHT;
-import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.DASH_PROPORTIONAL_WEIGHT;
+import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.derivativeWeight;
+import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.integralWeight;
+import static org.firstinspires.ftc.teamcode.Utilities.PIDWeights.proportionalWeight;
 
 public class PID {
 
@@ -24,9 +24,8 @@ public class PID {
         this.integralWeight = integral;
         this.derivativeWeight = derivative;
     }
-
-    //updates error and returns the correction
-    public double update(double error){
+    //updates error and returns the correction, using weights from Dashboard for tuning.
+    public double update(double error, boolean isTuning){
 
         integralSum += error; //adds the current error to the sum of errors, or the integral
 
@@ -37,9 +36,9 @@ public class PID {
         previousError = error; //sets previousError for next loop
         previousTime = System.currentTimeMillis(); //sets previousTime for next loop
 
-        double pComponent = error * proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
-        double iComponent = integralSum * integralWeight; //sets the iComponent by multipling the integral by the integralWeight
-        double dComponent = rateOfChange * derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
+        double pComponent = error * PIDWeights.proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
+        double iComponent = integralSum * PIDWeights.integralWeight; //sets the iComponent by multipling the integral by the integralWeight
+        double dComponent = rateOfChange * PIDWeights.derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
 
         //returns the correction
         return pComponent + iComponent + dComponent;
