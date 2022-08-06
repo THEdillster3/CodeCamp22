@@ -43,8 +43,8 @@ public class PID {
 
         if (isTuning){
             pComponent *= PIDWeights.proportionalWeight; //sets the pComponent by multiplying the error by the proportionalWeight
-            iComponent *= integralSum * PIDWeights.integralWeight; //sets the iComponent by multipling the integral by the integralWeight
-            dComponent *= rateOfChange * PIDWeights.derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
+            iComponent *= PIDWeights.integralWeight; //sets the iComponent by multipling the integral by the integralWeight
+            dComponent *= PIDWeights.derivativeWeight; //sets the dComponent by multiplying the rate of change by the derivativeWeight
 
             multTelemetry.addData("P", pComponent);
             multTelemetry.addData("I", iComponent);

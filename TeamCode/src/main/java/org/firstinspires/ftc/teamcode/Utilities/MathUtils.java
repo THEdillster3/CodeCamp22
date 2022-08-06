@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi;
 
 import org.opencv.core.Point;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.toRadians;
 import static java.lang.StrictMath.floorMod;
@@ -87,5 +88,22 @@ public class MathUtils {
 
     public static double convertTicks2Inches(double inches){
         return (0.0207 * inches) + 4.38; // Calculated using desmos
+    }
+    public static Point unShift(Point sp, double shiftAngle){
+        double r = toRadians(shiftAngle);
+        double x = sp.x * Math.sin(r) + sp.y * Math.cos(r);
+        double y = sp.x * Math.cos(r) - sp.y * Math.sin(r);
+        return new Point(x, y);
+    }
+    public static Point shift(Point p, double shiftAngle){
+        double rawX = p.x;
+        double rawY = p.y;
+        double x = (rawX * Math.cos(Math.toRadians(shiftAngle))) - (rawY * Math.sin(Math.toRadians(shiftAngle)));
+        double y = (rawX * Math.sin(Math.toRadians(shiftAngle))) + (rawY * Math.cos(Math.toRadians(shiftAngle)));
+        return new Point(x, y);
+    }
+
+    public static double absDistBetweenCoords(double x1, double y1, double x2, double y2){
+        return abs(Math.hypot(x1 - x2, y1 - y2));
     }
 }

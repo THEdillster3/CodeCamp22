@@ -44,7 +44,9 @@ public class IterativeTeleOp extends OpMode {
 
     /*
      * Code to run ONCE when the driver hits INIT
+
      */
+
     @Override
     public void init() {
         setOpMode(this);
@@ -53,7 +55,7 @@ public class IterativeTeleOp extends OpMode {
         zuckerberg = new Robot();
         controller = new Controller(gamepad1);
 
-        pid = new PID(0, 0, 0);
+        pid = new PID(0.0054, 0, 0.000015);
 
 
 
@@ -64,22 +66,22 @@ public class IterativeTeleOp extends OpMode {
 
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+
      */
+
     @Override
     public void init_loop() {
 
-        /*
-                    Y O U R   C O D E   H E R E
-                                                   */
+
+
 
 
         multTelemetry.addData("Status", "InitLoop");
         multTelemetry.update();
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
+
+
     @Override
     public void start() {
         runtime.reset();
@@ -89,7 +91,9 @@ public class IterativeTeleOp extends OpMode {
 
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+
      */
+
     @Override
     public void loop() {
         Controller.update();
@@ -115,13 +119,14 @@ public class IterativeTeleOp extends OpMode {
 
 
         if(controller.get(CIRCLE, DOWN) && direction){
-            zuckerberg.duck.spin(1);
+            //zuckerberg.duck.spin(1);
         }else if(controller.get(CIRCLE, DOWN) && !direction){
-            zuckerberg.duck.spin(-1);
-        }else{
-            zuckerberg.duck.spin(0);}
+            //zuckerberg.duck.spin(-1);
+        }else {
+            //zuckerberg.duck.spin(0);}
+        }
 
-        zuckerberg.grabber.update(controller.get(SQUARE, TAP), controller.get(TRIANGLE, TAP));
+        //zuckerberg.grabber.update(controller.get(SQUARE, TAP), controller.get(TRIANGLE, TAP));
 
 
 
@@ -147,17 +152,21 @@ public class IterativeTeleOp extends OpMode {
         /*
         This sets the speed ensuring that it doesn't
         continuously switch speeds when the button is pressed
+
          */
+
 
 
         /*
 
                     Y O U R   C O D E   H E R E
-                                                    */
 
-        /*
+
+
              ----------- L O G G I N G -----------
-                                                */
+
+         */
+
         multTelemetry.addData("Status", "TeleOp Running");
         multTelemetry.addData("Angle",zuckerberg.gyro.getAngle());
         multTelemetry.update();
@@ -169,7 +178,9 @@ public class IterativeTeleOp extends OpMode {
 
         /*
                     Y O U R   C O D E   H E R E
-                                                   */
 
+
+
+         */
     }
 }

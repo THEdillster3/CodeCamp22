@@ -2,26 +2,42 @@ package org.firstinspires.ftc.teamcode.Hardware;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
+import static org.firstinspires.ftc.teamcode.Utilities.MathUtils.angleMode.DEGREES;
+import static org.firstinspires.ftc.teamcode.Utilities.MathUtils.closestAngle;
+import static org.firstinspires.ftc.teamcode.Utilities.MathUtils.cos;
+import static org.firstinspires.ftc.teamcode.Utilities.MathUtils.shift;
+import static org.firstinspires.ftc.teamcode.Utilities.MathUtils.sin;
+import static org.firstinspires.ftc.teamcode.Utilities.MathUtils.unShift;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.hardwareMap;
 import static org.firstinspires.ftc.teamcode.Utilities.OpModeUtils.multTelemetry;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.addExact;
+import static java.lang.Math.hypot;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.IMU;
+import org.firstinspires.ftc.teamcode.Utilities.Odometry;
 import org.firstinspires.ftc.teamcode.Utilities.MathUtils;
 import org.firstinspires.ftc.teamcode.Utilities.PID;
+import org.opencv.core.Point;
 
 public class Mecanum {
-    DcMotor fl;
-    DcMotor fr;
-    DcMotor bl;
-    DcMotor br;
+    DcMotor drivefl;
+    DcMotor drivefr;
+    DcMotor drivebl;
+    DcMotor drivebr;
     private PID rotationalPID;
+    public IMU robotAngle;
+
+    public Odometry odometry;
+
     /**
      * Initializes the robot's necessary subsystems and motors
      */
@@ -30,18 +46,26 @@ public class Mecanum {
         initMecanum();
     }
     public void initMecanum(){
-        fl = hardwareMap.get(DcMotor.class, "fl");
-        fr = hardwareMap.get(DcMotor.class, "fr");
-        bl = hardwareMap.get(DcMotor.class, "bl");
-        br = hardwareMap.get(DcMotor.class, "br");
+        drivefl = hardwareMap.get(DcMotor.class, "drivefl");
+        drivefr = hardwareMap.get(DcMotor.class, "drivefr");
+        drivebl = hardwareMap.get(DcMotor.class, "drivebl");
+        drivebr = hardwareMap.get(DcMotor.class, "drivebr");
 
-        fr.setDirection(DcMotorSimple.Direction.FORWARD);
+        drivefl.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        fl.setDirection(DcMotorSimple.Direction.REVERSE);
-        br.setDirection(DcMotorSimple.Direction.FORWARD);
-        bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        drivefr.setDirection(DcMotorSimple.Direction.REVERSE);
+        drivebl.setDirection(DcMotorSimple.Direction.FORWARD);
+        drivebr.setDirection(DcMotorSimple.Direction.REVERSE);
+        robotAngle = new IMU("gyro");
+        Motor.Encoder middleEncoderPos = hardwareMap.get(Motor.Encoder.class, "drivefl");
+        Motor.Encoder centerEncoderPos = hardwareMap.get(Motor.Encoder.class, "drivefr");
 
-        rotationalPID = new PID(.065,0,.00001);
+        rotationalPID = new PID(.054,0,.000015);
+        odometry = new Odometry(
+            robotAngle::getAngle,
+            middleEncoderPos::getDistance,
+            centerEncoderPos::getDistance
+        );  
 
     }
 
@@ -51,10 +75,10 @@ public class Mecanum {
      */
     public void setAllPower(double power){
 
-        fl.setPower(power);
-        fr.setPower(power);
-        bl.setPower(power);
-        br.setPower(power);
+        drivefl.setPower(power);
+        drivefr.setPower(power);
+        drivebl.setPower(power);
+        drivebr.setPower(power);
 
     }
 
@@ -69,32 +93,43 @@ public class Mecanum {
         double brPower = (drive + strafe - turn) * power;
         double blPower = (drive - strafe + turn) * power;
 
-        fr.setPower(frPower);
-        fl.setPower(flPower);
-        br.setPower(brPower);
-        bl.setPower(blPower);
+        drivefr.setPower(frPower);
+        drivefl.setPower(flPower);
+        drivebr.setPower(brPower);
+        drivebl.setPower(blPower);
 
 
     }
+
+
+
     public void resetMotors(){
-        fr.setMode(STOP_AND_RESET_ENCODER);
-        fl.setMode(STOP_AND_RESET_ENCODER);
-        br.setMode(STOP_AND_RESET_ENCODER);
-        bl.setMode(STOP_AND_RESET_ENCODER);
+        drivefl.setMode(STOP_AND_RESET_ENCODER);
+        drivefr.setMode(STOP_AND_RESET_ENCODER);
+        drivebl.setMode(STOP_AND_RESET_ENCODER);
+        drivebr.setMode(STOP_AND_RESET_ENCODER);
 
-        fr.setMode(RUN_WITHOUT_ENCODER);
-        fl.setMode(RUN_WITHOUT_ENCODER);
-        br.setMode(RUN_WITHOUT_ENCODER);
-        bl.setMode(RUN_WITHOUT_ENCODER);
+        drivefl.setMode(RUN_WITHOUT_ENCODER);
+        drivefr.setMode(RUN_WITHOUT_ENCODER);
+        drivebl.setMode(RUN_WITHOUT_ENCODER);
+        drivebr.setMode(RUN_WITHOUT_ENCODER);
     }
-    public double getPosition(){
+    public Point getPosition(IMU imu){
+        double yDist = (drivefl.getCurrentPosition() + drivefl.getCurrentPosition() + drivefl.getCurrentPosition() + drivefl.getCurrentPosition()) / 4.0;
+        double xDist = (drivefl.getCurrentPosition() - drivefl.getCurrentPosition() + drivefl.getCurrentPosition() - drivefl.getCurrentPosition()) / 4.0;
+        Point unshiftedDistances = unShift(new Point(xDist, yDist), imu.getAngle());
+        return new Point(xDist, yDist);
+    }
+        /*
         double frPosition = fr.getCurrentPosition();
         double flPosition = fl.getCurrentPosition();
         double brPosition = br.getCurrentPosition();
         double blPosition = bl.getCurrentPosition();
         double avgPosition =(frPosition + flPosition + brPosition + blPosition) / 4.0;
         return avgPosition;
-    }
+         */
+
+
 
 
 
@@ -103,31 +138,39 @@ public class Mecanum {
      * Translates the robot autonomously a certain distance known as ticks
      * @param ticks
      */
-    public void strafe(double ticks){
+
+    public void strafe(double ticks, double targetAngle, double strafeAngle, IMU imu){
+
+        // Reset our encoders to 0
         resetMotors();
-        double current_distance = 0.0;
-        double power = 0.5;
-        if (ticks < 0){
-            power = -power;
-        }
-        while (abs(current_distance) < abs(ticks)){
-            current_distance = getPosition();
 
-            setAllPower(power);
-            multTelemetry.addData("current distance", current_distance);
-            multTelemetry.addData("Target Distance", ticks);
+        targetAngle = closestAngle(targetAngle, imu.getAngle());
+
+        // Calculate our x and y powers
+        double xPower = cos(strafeAngle, DEGREES);
+        double yPower = sin(strafeAngle, DEGREES);
+
+        // Calculate the distances we need to travel
+        double xDist = xPower * ticks;
+        double yDist = yPower * ticks;
+
+        // Initialize our current position variables
+        Point curPos = new Point(0, 0);
+        double curHDist = 0;
+
+        while (curHDist < ticks){
+            curPos = getPosition(imu);
+            curHDist = Math.hypot(curPos.x, curPos.y);
+
+            Point shiftedPowers = shift(new Point(xPower, yPower), imu.getAngle());
+            setDrivePower(shiftedPowers.y, shiftedPowers.x, rotationalPID.update(imu.getAngle() - targetAngle, false), 0.3);
+
+            // Log some data out for debugging
+            multTelemetry.addData("curPos", "(" + curPos.x + ", " + curPos.y + ")");
+            multTelemetry.addData("curHDist", curHDist);
             multTelemetry.update();
-
-
         }
-        setAllPower(0.0);
-
-
-        /*
-
-                Y O U R   C O D E   H E R E
-
-         */
+        setAllPower(0);
     }
 
     /**
@@ -137,9 +180,9 @@ public class Mecanum {
      */
     public void turn(double degrees, IMU gyro){
         ElapsedTime timer = new ElapsedTime();
-         double closestAngle = MathUtils.closestAngle(degrees, gyro.getAngle());
+         double closestAngle = closestAngle(degrees, gyro.getAngle());
          timer.reset();
-        while(timer.seconds() < 2){
+        while(timer.seconds() < 1){
             double turnValue = rotationalPID.update(closestAngle - gyro.getAngle(), false);
             setDrivePower(0.0,0.0, -turnValue, 0.5);
             multTelemetry.addData("Closest Angle ", degrees);
@@ -148,6 +191,7 @@ public class Mecanum {
         }
         setAllPower(0.0);
     }
+
 
 
     /**

@@ -17,8 +17,8 @@ Robot {
    public static ElapsedTime time = new ElapsedTime();
    public Mecanum drivetrain;
    public IMU gyro;
-   public DuckSpinner duck;
-   public Grabber grabber;
+   //public DuckSpinner duck;
+   //public Grabber grabber;
 
    public Robot(){
       initRobot();
@@ -29,8 +29,8 @@ Robot {
       gyro = new IMU("imu");
 
       drivetrain = new Mecanum();
-      duck = new DuckSpinner("duck");
-      grabber = new Grabber();
+      //duck = new DuckSpinner("duck");
+      //grabber = new Grabber();
 
       multTelemetry.addData("Status", "Initialized");
       multTelemetry.update();
